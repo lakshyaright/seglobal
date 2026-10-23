@@ -10,19 +10,21 @@ import {
   ShieldCheck, 
   Truck, 
   Sparkles, 
-  Heart,
-  ArrowUpDown,
-  Lock,
-  PackageX,
-  Palette
+  Heart, 
+  ArrowUpDown, 
+  Lock, 
+  PackageX, 
+  Palette 
 } from 'lucide-react';
+import { ProductDetailModal } from './ProductDetailModal.tsx';
+import { WishlistDrawer } from './WishlistDrawer.tsx';
 
 interface PublicStorefrontProps {
   onOpenAdmin: () => void;
 }
 
 export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin }) => {
-  const { publishedProducts } = useProducts();
+  const { publishedProducts, trackClick } = useProducts();
   const { effectiveTemplate, designSettings, visitorTemplateId, setVisitorTemplateId } = useStoreTheme();
   const classes = effectiveTemplate.classes;
 
@@ -30,6 +32,8 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin 
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
   // Extract all categories dynamically from published products
   const categories = useMemo(() => {
@@ -138,6 +142,20 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin 
                 </button>
               </div>
             )}
+
+            {/* Saved Wishlist Drawer Trigger */}
+            <button
+              onClick={() => setIsWishlistOpen(true)}
+              className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors relative cursor-pointer mr-1"
+              title="View saved wishlist items"
+            >
+              <Heart className={`w-4 h-4 ${likedIds.size > 0 ? 'text-rose-500 fill-rose-500' : 'opacity-70'}`} />
+              {likedIds.size > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white font-mono text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
+                  {likedIds.size}
+                </span>
+              )}
+            </button>
 
             {/* Exactly ONE Admin button on the entire public page */}
             <button
@@ -298,6 +316,7 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin 
                       href={p.link}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => trackClick(p.id, p.platform)}
                       className={`py-2 px-4 rounded-xl text-white font-bold text-xs flex items-center gap-1.5 ${platformColor} transition-transform active:scale-95`}
                     >
                       <span>{platformLabel}</span>
@@ -345,11 +364,13 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin 
                   </button>
 
                   <div>
-                    {/* Visual Media Box */}
+                    {/* Visual Media Box (Click to Quick View) */}
                     <div
+                      onClick={() => setSelectedProduct(p)}
                       className={`w-full ${
                         isCompact ? 'h-40' : 'h-52'
-                      } bg-black/5 dark:bg-white/5 rounded-xl flex items-center justify-center overflow-hidden mb-3 relative`}
+                      } bg-black/5 dark:bg-white/5 rounded-xl flex items-center justify-center overflow-hidden mb-3 relative cursor-pointer`}
+                      title="Click to view details & WhatsApp share"
                     >
                       {isUrl ? (
                         <img
@@ -379,7 +400,10 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin 
                     </div>
 
                     {/* Title */}
-                    <h3 className={`font-bold leading-snug line-clamp-2 ${isCompact ? 'text-xs min-h-[32px] mb-2' : 'text-sm min-h-[38px] mb-3'}`}>
+                    <h3 
+                      onClick={() => setSelectedProduct(p)}
+                      className={`font-bold leading-snug line-clamp-2 cursor-pointer hover:underline ${isCompact ? 'text-xs min-h-[32px] mb-2' : 'text-sm min-h-[38px] mb-3'}`}
+                    >
                       {p.title}
                     </h3>
 
@@ -414,6 +438,7 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin 
                     href={p.link}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackClick(p.id, p.platform)}
                     className={`w-full py-2.5 px-3 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm ${platformColor} active:scale-[0.98]`}
                   >
                     <span className="truncate">{platformLabel}</span>
@@ -454,6 +479,23 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin 
           </div>
         </div>
       </footer>
+
+      {/* Product Quick View & WhatsApp Share Modal */}
+      <ProductDetailModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        isLiked={selectedProduct ? likedIds.has(selectedProduct.id) : false}
+        onToggleLike={toggleLike}
+      />
+
+      {/* Wishlist Slide-Over Drawer */}
+      <WishlistDrawer
+        isOpen={isWishlistOpen}
+        onClose={() => setIsWishlistOpen(false)}
+        likedIds={likedIds}
+        onRemoveLiked={toggleLike}
+        onClearAll={() => setLikedIds(new Set())}
+      />
     </div>
   );
 };

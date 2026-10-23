@@ -23,9 +23,11 @@ import {
   LogOut,
   ShieldCheck,
   Download,
-  Palette
+  Palette,
+  BarChart3
 } from 'lucide-react';
 import { AdminThemeCustomizer } from './AdminThemeCustomizer.tsx';
+import { AdminAnalytics } from './AdminAnalytics.tsx';
 
 interface AdminPortalProps {
   onViewPublic: () => void;
@@ -38,7 +40,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [platformFilter, setPlatformFilter] = useState<string>('all');
-  const [activeAdminTab, setActiveAdminTab] = useState<'inventory' | 'templates'>('inventory');
+  const [activeAdminTab, setActiveAdminTab] = useState<'inventory' | 'templates' | 'analytics'>('inventory');
 
   // Form modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -261,10 +263,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
             <Palette className="w-3.5 h-3.5 text-emerald-400" />
             <span>Store Templates & Themes</span>
           </button>
+
+          <button
+            onClick={() => setActiveAdminTab('analytics')}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              activeAdminTab === 'analytics'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white bg-slate-950 border border-slate-800'
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+            <span>Analytics & Catalog Data</span>
+          </button>
         </div>
 
         {activeAdminTab === 'templates' ? (
           <AdminThemeCustomizer onViewPublic={onViewPublic} />
+        ) : activeAdminTab === 'analytics' ? (
+          <AdminAnalytics />
         ) : (
           <>
             {/* KPI Summary Cards */}
