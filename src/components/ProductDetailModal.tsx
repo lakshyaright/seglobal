@@ -14,6 +14,7 @@ import {
   Tag, 
   AlertCircle 
 } from 'lucide-react';
+import { ProductImageSlider } from './ProductImageSlider.tsx';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -72,24 +73,25 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
         <div className="overflow-y-auto flex-1 pr-1 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            {/* Visual Box */}
-            <div className="w-full h-72 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center overflow-hidden relative shadow-inner">
-              {isUrl ? (
-                <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="text-8xl select-none">{product.image || '📦'}</div>
-              )}
+            {/* Multi-Photo Slider Box */}
+            <div className="relative">
+              <ProductImageSlider
+                images={product.images && product.images.length > 0 ? product.images : [product.image || '💖']}
+                title={product.title}
+                showThumbnails={true}
+                size="large"
+              />
 
               {/* Heart Button */}
               <button
                 onClick={() => onToggleLike(product.id)}
-                className="absolute top-4 left-4 p-2.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-black/10 flex items-center justify-center transition-transform hover:scale-110 shadow-sm cursor-pointer"
+                className="absolute top-3 left-3 p-2.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-black/10 flex items-center justify-center transition-transform hover:scale-110 shadow-sm cursor-pointer z-20"
               >
                 <Heart className={`w-4 h-4 ${isLiked ? 'fill-rose-500 text-rose-500' : 'text-slate-500'}`} />
               </button>
 
               {/* Stock Status Badge */}
-              <div className="absolute bottom-3 left-3">
+              <div className="absolute top-3 right-3 z-20">
                 {product.stockStatus === 'out_of_stock' ? (
                   <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-rose-500 text-white shadow-sm">
                     Out of Stock
@@ -100,7 +102,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </span>
                 ) : (
                   <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-emerald-500 text-white shadow-sm">
-                    In Stock & Ready
+                    In Stock
                   </span>
                 )}
               </div>

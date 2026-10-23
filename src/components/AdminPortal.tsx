@@ -24,10 +24,12 @@ import {
   ShieldCheck,
   Download,
   Palette,
-  BarChart3
+  BarChart3,
+  Megaphone
 } from 'lucide-react';
 import { AdminThemeCustomizer } from './AdminThemeCustomizer.tsx';
 import { AdminAnalytics } from './AdminAnalytics.tsx';
+import { AdminAdsManager } from './AdminAdsManager.tsx';
 
 interface AdminPortalProps {
   onViewPublic: () => void;
@@ -40,7 +42,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [platformFilter, setPlatformFilter] = useState<string>('all');
-  const [activeAdminTab, setActiveAdminTab] = useState<'inventory' | 'templates' | 'analytics'>('inventory');
+  const [activeAdminTab, setActiveAdminTab] = useState<'inventory' | 'templates' | 'analytics' | 'ads'>('inventory');
 
   // Form modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,6 +58,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
   const [formReviews, setFormReviews] = useState<string>('24');
   const [formLink, setFormLink] = useState('https://www.meesho.com');
   const [formImage, setFormImage] = useState('💖');
+  const [formImages, setFormImages] = useState<string[]>(['💖']);
+  const [newImageUrl, setNewImageUrl] = useState('');
   const [formIsPublished, setFormIsPublished] = useState<boolean>(true);
   const [formFeatured, setFormFeatured] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -93,6 +97,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
     setFormReviews('15');
     setFormLink('https://www.meesho.com');
     setFormImage('💖');
+    setFormImages(['💖']);
+    setNewImageUrl('');
     setFormIsPublished(true);
     setFormFeatured(false);
     setFormError(null);
@@ -110,6 +116,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
     setFormReviews(p.reviews.toString());
     setFormLink(p.link);
     setFormImage(p.image);
+    setFormImages(p.images && p.images.length > 0 ? p.images : [p.image || '💖']);
+    setNewImageUrl('');
     setFormIsPublished(p.isPublished);
     setFormFeatured(!!p.featured);
     setFormError(null);
@@ -128,6 +136,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
       return;
     }
 
+    const primaryImg = formImages[0] || formImage || '💖';
+
     const payload = {
       title: formTitle.trim(),
       category: formCategory,
@@ -137,7 +147,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
       rating: formRating ? Number(formRating) : 4.1,
       reviews: formReviews ? Number(formReviews) : 0,
       link: formLink.trim(),
-      image: formImage.trim() || '📦',
+      image: primaryImg,
+      images: formImages.length > 0 ? formImages : [primaryImg],
       isPublished: formIsPublished,
       featured: formFeatured,
     };
@@ -152,15 +163,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
 
   const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (result) {
-          setFormImage(result);
-        }
-      };
-      reader.readAsDataURL(file);
+      Array.from(e.target.files).forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result as string;
+          if (result) {
+            setFormImages((prev) => [...prev, result]);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
@@ -275,12 +287,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
             <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
             <span>Analytics & Catalog Data</span>
           </button>
+
+          <button
+            onClick={() => setActiveAdminTab('ads')}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              activeAdminTab === 'ads'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white bg-slate-950 border border-slate-800'
+            }`}
+          >
+            <Megaphone className="w-3.5 h-3.5 text-purple-400" />
+            <span>Ads & Campaigns</span>
+          </button>
         </div>
 
         {activeAdminTab === 'templates' ? (
           <AdminThemeCustomizer onViewPublic={onViewPublic} />
         ) : activeAdminTab === 'analytics' ? (
           <AdminAnalytics />
+        ) : activeAdminTab === 'ads' ? (
+          <AdminAdsManager onViewPublic={onViewPublic} />
         ) : (
           <>
             {/* KPI Summary Cards */}
@@ -679,37 +705,91 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onViewPublic }) => {
                 />
               </div>
 
-              {/* Media & Emoji Picker */}
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
-                  Product Image / Emoji
-                </label>
-                <div className="flex gap-2 mb-2">
+              {/* Multi-Photo Media & Gallery Manager */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-300">
+                    Product Gallery & Photos ({formImages.length}) *
+                  </label>
+                  <span className="text-[11px] text-slate-500">First photo is cover</span>
+                </div>
+
+                {/* Thumbnails of current photos */}
+                <div className="flex items-center gap-2 flex-wrap p-2.5 bg-slate-950 rounded-xl border border-slate-800 min-h-[64px]">
+                  {formImages.map((img, idx) => {
+                    const isImgUrl = img && (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:'));
+                    return (
+                      <div
+                        key={idx}
+                        className="relative group/thumb w-14 h-14 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0"
+                      >
+                        {isImgUrl ? (
+                          <img src={img} alt="thumb" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-2xl">{img}</span>
+                        )}
+
+                        {/* Cover Tag on first photo */}
+                        {idx === 0 && (
+                          <span className="absolute bottom-0 inset-x-0 bg-blue-600 text-white text-[8px] font-bold text-center py-0.2">
+                            COVER
+                          </span>
+                        )}
+
+                        {/* Remove Photo Button */}
+                        {formImages.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setFormImages(formImages.filter((_, i) => i !== idx))}
+                            className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity"
+                            title="Remove photo"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Add Photo by URL or Upload */}
+                <div className="flex gap-2">
                   <input
                     type="text"
-                    value={formImage}
-                    onChange={(e) => setFormImage(e.target.value)}
-                    placeholder="Image URL or Emoji"
+                    value={newImageUrl}
+                    onChange={(e) => setNewImageUrl(e.target.value)}
+                    placeholder="Paste image URL to add photo"
                     className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
                   />
-                  <label className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium cursor-pointer flex items-center gap-1 border border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newImageUrl.trim()) {
+                        setFormImages([...formImages, newImageUrl.trim()]);
+                        setNewImageUrl('');
+                      }
+                    }}
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold cursor-pointer border border-slate-700 shrink-0"
+                  >
+                    + Add URL
+                  </button>
+                  <label className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-1 shrink-0 shadow-sm">
                     <Upload className="w-3.5 h-3.5" />
-                    <span>Upload</span>
-                    <input type="file" accept="image/*" onChange={handleImageFileUpload} className="hidden" />
+                    <span>Upload Photos</span>
+                    <input type="file" accept="image/*" multiple onChange={handleImageFileUpload} className="hidden" />
                   </label>
                 </div>
 
-                {/* Emoji presets */}
+                {/* Emoji Quick Presets to Append */}
                 <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                  <span className="text-[11px] text-slate-400 mr-1">Presets:</span>
+                  <span className="text-[11px] text-slate-500 mr-1">Add Preset:</span>
                   {EMOJI_PRESETS.map((emoji) => (
                     <button
                       key={emoji}
                       type="button"
-                      onClick={() => setFormImage(emoji)}
-                      className={`w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-sm transition-transform active:scale-90 ${
-                        formImage === emoji ? 'ring-2 ring-blue-500' : ''
-                      }`}
+                      onClick={() => setFormImages([...formImages, emoji])}
+                      className="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-sm transition-transform active:scale-90"
+                      title={`Add ${emoji} to photos`}
                     >
                       {emoji}
                     </button>

@@ -7,6 +7,7 @@ import React from 'react';
 import { ProductProvider } from './context/ProductContext.tsx';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import { ThemeProvider } from './context/ThemeContext.tsx';
+import { AdProvider } from './context/AdContext.tsx';
 import { useAppRoute } from './utils/navigation.ts';
 import { PublicStorefront } from './components/PublicStorefront.tsx';
 import { AdminPortal } from './components/AdminPortal.tsx';
@@ -36,7 +37,9 @@ export default function App() {
     <ProductProvider>
       <AuthProvider>
         <ThemeProvider>
-          <AppContent />
+          <AdProvider>
+            <AppContent />
+          </AdProvider>
         </ThemeProvider>
       </AuthProvider>
     </ProductProvider>

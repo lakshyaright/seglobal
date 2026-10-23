@@ -22,6 +22,7 @@ export interface Product {
   platform: PlatformType;
   link: string;
   image: string;
+  images?: string[];
   isPublished: boolean;
   createdAt: string;
   updatedAt?: string;

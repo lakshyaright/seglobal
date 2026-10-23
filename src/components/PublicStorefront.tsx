@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { ProductDetailModal } from './ProductDetailModal.tsx';
 import { WishlistDrawer } from './WishlistDrawer.tsx';
+import { ProductImageSlider } from './ProductImageSlider.tsx';
+import { StoreAdBanner } from './StoreAdBanner.tsx';
 
 interface PublicStorefrontProps {
   onOpenAdmin: () => void;
@@ -183,6 +185,11 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin 
         </p>
       </section>
 
+      {/* Dynamic Store Ad & Promotional Campaign Banner */}
+      <section className="max-w-6xl mx-auto px-4 mb-6">
+        <StoreAdBanner position="top-strip" />
+      </section>
+
       {/* 4. Filter & Search Controls */}
       <section className="max-w-6xl mx-auto px-4 mb-8 w-full">
         <div className={`${classes.cardBg} p-3.5 rounded-2xl border ${classes.cardBorder} shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 transition-colors`}>
@@ -274,11 +281,26 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin 
                   className={`${classes.cardBg} border ${classes.cardBorder} ${classes.cardRadius} p-4 flex flex-col sm:flex-row items-center justify-between gap-5 transition-all duration-200 hover:shadow-lg relative group`}
                 >
                   <div className="flex items-center gap-4 w-full sm:w-auto">
-                    <div className="w-24 h-24 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center overflow-hidden shrink-0 relative">
+                    <div 
+                      onClick={() => setSelectedProduct(p)}
+                      className="w-24 h-24 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center overflow-hidden shrink-0 relative cursor-pointer group/thumb"
+                      title="Click to view full photo gallery"
+                    >
                       {isUrl ? (
-                        <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                        <img 
+                          src={(p.images && p.images.length > 0) ? p.images[0] : p.image} 
+                          alt={p.title} 
+                          className="w-full h-full object-cover transition-transform group-hover/thumb:scale-105" 
+                        />
                       ) : (
-                        <span className="text-4xl select-none">{p.image || '📦'}</span>
+                        <span className="text-4xl select-none">
+                          {(p.images && p.images.length > 0) ? p.images[0] : p.image || '📦'}
+                        </span>
+                      )}
+                      {p.images && p.images.length > 1 && (
+                        <span className="absolute bottom-1 right-1 bg-black/75 text-white font-mono text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                          {p.images.length} photos
+                        </span>
                       )}
                     </div>
                     <div>
@@ -364,31 +386,16 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ onOpenAdmin 
                   </button>
 
                   <div>
-                    {/* Visual Media Box (Click to Quick View) */}
-                    <div
-                      onClick={() => setSelectedProduct(p)}
-                      className={`w-full ${
-                        isCompact ? 'h-40' : 'h-52'
-                      } bg-black/5 dark:bg-white/5 rounded-xl flex items-center justify-center overflow-hidden mb-3 relative cursor-pointer`}
-                      title="Click to view details & WhatsApp share"
-                    >
-                      {isUrl ? (
-                        <img
-                          src={p.image}
-                          alt={p.title}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className={`${isCompact ? 'text-5xl' : 'text-6xl'} select-none transition-transform duration-300 group-hover:scale-110`}>
-                          {p.image || '📦'}
-                        </div>
-                      )}
-
+                    {/* Multi-Photo Image Slider (User can slide / swipe photos directly) */}
+                    <div className="mb-3 relative">
+                      <ProductImageSlider
+                        images={p.images && p.images.length > 0 ? p.images : [p.image || '📦']}
+                        title={p.title}
+                        size={isCompact ? 'compact' : 'standard'}
+                        onClickMain={() => setSelectedProduct(p)}
+                      />
                       {p.featured && (
-                        <span className="absolute bottom-2 left-2 bg-amber-400 text-neutral-950 font-bold text-[10px] uppercase px-2 py-0.5 rounded shadow-sm">
+                        <span className="absolute top-2 left-2 pointer-events-none bg-amber-400 text-neutral-950 font-bold text-[10px] uppercase px-2 py-0.5 rounded shadow-sm z-10">
                           Staff Pick
                         </span>
                       )}

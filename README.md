@@ -47,10 +47,12 @@ This project is architected with a decoupled dual-route interface:
 * **Audience:** End customers and online shoppers.
 * **Key Features:**
   * Displays **only products published by the Admin** (`isPublished: true`).
+  * **Multi-Photo Interactive Sliders:** Products now support multiple photos/angles. Customers can slide/swipe through photos directly on storefront cards or inside the detailed quick-view modal with thumbnail navigation.
+  * **Dynamic Store Ad & Promotional Campaign Banner:** Auto-rotating high-converting promotional banners with customizable gradients, badges, CTAs, and click analytics.
   * **Marketplace Affiliate Integration:** Direct branded buy buttons for **Meesho** (Pink), **Flipkart** (Blue), and **Amazon** (Orange).
   * **Dynamic Category Filtering:** Fast client-side filtering for *Cable Protectors*, *Lens Protectors*, and *Cases & Gadgets*.
   * **Live Search & Price Sorting:** Instant search with debounce and price / rating sorting.
-  * **Product Quick View Modal:** Click any item to view large visual preview, stock availability, and specifications.
+  * **Product Quick View Modal:** Click any item to view large visual preview with multiple photos, stock availability, and specifications.
   * **One-Click WhatsApp Sharing:** Direct link to share products or deals on WhatsApp (`api.whatsapp.com/send`).
   * **Customer Saved Wishlist Drawer:** Slide-over drawer with saved items and dynamic total wishlist value calculation.
   * **Single Admin Button:** Clean e-commerce interface with exactly **one** discreet `🔒 Admin` button in the navbar.
@@ -65,8 +67,15 @@ This project is architected with a decoupled dual-route interface:
     * **Password:** `admin123`
   * Authorized session with prominent **Log Out** button to lock the console.
 * **Key Features:**
+  * **Multi-Photo Gallery Uploader:** Add multiple photos per product via direct file upload, external image URLs, or emoji presets. Set primary cover image and delete individual photos.
+  * **Ads & Promotional Campaigns Studio (`AdminAdsManager`):**
+    * Create, edit, and toggle promotional banners and ads.
+    * Choose gradients (Purple Glam, Ocean Blue, Gold Amber, Emerald Mint, Crimson Rose).
+    * Choose position (`top-strip`, `middle-catalog`, `popup-deal`).
+    * Badges (`FLASH SALE`, `HOT DEAL`, `LIMITED OFFER`, etc.).
+    * Custom CTA text & destination links.
+    * Real-time click tracking on promotional campaigns.
   * **1-Click Live Publish Toggle:** Toggle any product between `Published (Live)` and `Draft (Hidden)` with instant real-time synchronization.
-  * **Add / Edit Product Modal:** Title, Category, Selling Price (₹), Original MRP (₹), Ratings, Reviews, Affiliate Redirect URL, Emoji Quick Presets (`💖`, `🧸`, `🐧`, `🐼`, `⚡`, `🎧`, `📷`, `🌸`, `🥑`, etc.), and custom image upload.
   * **Store Templates & Visual Themes Studio:**
     * **4 Themes:** *Warm Boutique (Aesthetic Cream)*, *Midnight Cyber (Dark Tech Luxe)*, *Nordic Studio (Minimal Monochrome)*, and *Candy Kawaii (Playful Pastel)*.
     * **3 Grid Layouts:** *Standard 3-Column*, *Compact 4-Column*, and *Horizontal Showcase Rows*.
@@ -84,7 +93,7 @@ This project is architected with a decoupled dual-route interface:
 * **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
 * **Iconography:** [Lucide React](https://lucide.dev/)
 * **Typography:** Plus Jakarta Sans & Space Grotesk
-* **State & Persistence:** React Context API with cross-tab `localStorage` synchronization
+* **State & Persistence:** React Context API with cross-tab `localStorage` synchronization (`ProductContext`, `AuthContext`, `ThemeContext`, `AdContext`)
 
 ---
 
@@ -96,21 +105,27 @@ This project is architected with a decoupled dual-route interface:
 │   └── seglobal.zip         # 1-Click full project downloadable archive
 ├── src/
 │   ├── components/
+│   │   ├── AdminAdsManager.tsx       # Promotional ad campaigns manager
 │   │   ├── AdminAnalytics.tsx        # Outbound click tracking & bulk CSV/JSON tools
 │   │   ├── AdminLogin.tsx            # Protected authentication gate
-│   │   ├── AdminPortal.tsx           # Product catalog inventory manager
+│   │   ├── AdminPortal.tsx           # Product catalog inventory manager & gallery editor
 │   │   ├── AdminThemeCustomizer.tsx  # Store templates & layout geometry studio
 │   │   ├── ProductDetailModal.tsx    # Customer quick view & WhatsApp share
+│   │   ├── ProductImageSlider.tsx    # Interactive multi-photo carousel & slider
 │   │   ├── PublicStorefront.tsx      # Public customer e-commerce page
+│   │   ├── StoreAdBanner.tsx         # Auto-rotating promotional ad banner
 │   │   └── WishlistDrawer.tsx        # Saved items slide-over drawer
 │   ├── context/
+│   │   ├── AdContext.tsx             # Promotional ad campaigns context & click tracking
 │   │   ├── AuthContext.tsx           # Admin session & authentication
 │   │   ├── ProductContext.tsx        # Catalog state & click tracking
 │   │   └── ThemeContext.tsx          # Store templates & visual theme state
 │   ├── data/
-│   │   ├── defaultProducts.ts        # Initial mobile accessory items
+│   │   ├── defaultAds.ts             # Default high-converting promotional campaigns
+│   │   ├── defaultProducts.ts        # Initial mobile accessory items with multiple photos
 │   │   └── storeTemplates.ts         # 4 color palettes and theme configurations
 │   ├── types/
+│   │   ├── ad.ts                     # Store promotional ad types & positions
 │   │   ├── product.ts                # TypeScript product and stock types
 │   │   └── theme.ts                  # Theme and layout types
 │   ├── utils/
