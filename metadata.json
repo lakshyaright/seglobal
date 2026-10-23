@@ -1,0 +1,6 @@
+{
+  "name": "SE GLOBAL — Mobile Accessories & Admin Portal",
+  "description": "Discover cute mobile accessories with personality on SE GLOBAL, with a dedicated admin management portal for publishing and managing products.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
